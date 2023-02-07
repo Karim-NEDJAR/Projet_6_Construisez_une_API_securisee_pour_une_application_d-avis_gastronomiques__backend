@@ -15,4 +15,5 @@ bcrypt: 5.1.0
 jsonwebtoken": 9.0.0 (=jwt)
 multer: 1.4.5-lts.1
 nodemon: 2.0.20
+dotenv: 16.0.3
 
