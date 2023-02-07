@@ -12,10 +12,12 @@ const MIME_TYPES = {
     "image/tiff": "tiff",
     "image/tif": "tif"
 };
+
 const space = " ";
 const underscore = "_";
 const dot = ".";
 const timestamp = Date.now();
+
 const storage = multer.diskStorage({
     destination: (req, file, callback) => { 
         callback(null, "images"); 

@@ -7,10 +7,7 @@ const salage = 10;
 exports.signup = (req, res, next) => {
     bcrypt.hash(req.body.password, salage)
         .then(hash => {
-            const user = new User({
-                email: req.body.email,
-                password: hash
-            });
+            const user = new User({ email: req.body.email, password: hash });
             user.save()
                 .then(() => res.status(201).json({ message: "Nouvel utilisateur enregistré !" }))
                 //l'enregistrement a échoué
@@ -22,7 +19,6 @@ exports.signup = (req, res, next) => {
 
 
 //connexion 
-//utiliser une variable d'environnement?
 exports.login = (req, res, next) => {
     User.findOne({ email: req.body.email })
         .then(user => {
@@ -43,7 +39,7 @@ exports.login = (req, res, next) => {
                         userId: user._id,
                         token: jwt.sign(
                             { userId: user._id },
-                            "RANDOM_TOKEN_SECRET",
+                            `${process.env.SECRET_KEY}`,
                             { expiresIn: "24h" }
                         )
                     });

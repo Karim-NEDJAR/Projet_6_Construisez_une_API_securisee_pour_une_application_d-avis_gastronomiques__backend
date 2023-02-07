@@ -3,7 +3,9 @@ const mongoose = require ("mongoose");
 const sauceRoutes = require("./routes/sauce");
 const userRoutes = require("./routes/user");
 const path = require("path");
-require("dotenv").config({ path: process.cwd() + "/.env" });
+const dotenv = require("dotenv");
+//chemin relatif du fichier des variables d'environnement
+dotenv.config({ path: process.cwd() + "/.env" });
 
 // connection à la bdd mongoDB via le package mongoose
 mongoose.connect(`mongodb+srv://${process.env.DB_USER_NAME}:${process.env.DB_USER_PASSWORD}@${process.env.DB_URL}?retryWrites=true&w=majority`,
