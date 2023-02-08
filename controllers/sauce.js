@@ -19,15 +19,16 @@ exports.readSingleSauce = (req, res, next) => {
 // création d'une sauce
 exports.createSauce = (req, res, next) => {
     const sauceObject = JSON.parse(req.body.sauce);
-    //suppression de l'id qui est généré automatiquement lors de la création de la sauce
-    // et de l'userId pour le récupérer de la bdd (fourni par le middleware d'authentification)
-    delete sauceObject._id; //????
+    delete sauceObject._id; // sera recréé
+    //suppression ci-dessus de l'id qui sera recréé automatiquement lors de la création de la sauce
+    // et ci-dessous de l'userId pour le récupérer de la bdd (fourni par le middleware d'authentification)
     delete sauceObject._userId; // supprimé puis réaffecté avec la valeur sûre provenant de l'authentification
     const sauce = new Sauce({
         ...sauceObject,
         userId: req.auth.userId,
         imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
     });
+    console.log("createSauce --> req.file.filename :  " + req.file.filename);
     sauce.save()
         .then(() => { res.status(201).json(); })
         .catch((error) => { res.status(400).json({ error: error }); });
@@ -35,21 +36,46 @@ exports.createSauce = (req, res, next) => {
 // FIN création d'une sauce
 
 //modification d'une sauce (update)
+
 exports.updateSauce = (req, res, next) => {
-    //2 cas sont à considérer: un cas avec  image et un cas sans image
-    //si une image accompagne la requête, on lui affecte son url
-    const sauceObject = req.file ? {
-        ...JSON.parse(req.body.sauce),
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
-    } : { ...req.body };
-    // delete sauceObject._userId; // suppression inutile ??  réaffecté après le test positif
+    //2 cas sont à considérer: un cas avec une nouvelle image 
+    //et un cas sans nouvelle image
+    //si une image accompagne la requête, on lui affecte son url 
+    //et on supprime éventuellement l'ancienne image
+    //si pas d'image on récupère seulement le body de la requête
+    let suppressOldImage = false;
+    let sauceObject = req.file;
+    if (sauceObject) {
+        sauceObject = {
+            ...JSON.parse(req.body.sauce),
+            imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
+        };
+        suppressOldImage = true;
+    } else {
+        sauceObject = { ...req.body };
+    };
+
+    // delete sauceObject._userId; // suppression (préconisée dans le cours) qui semble ici inutile 
     Sauce.findOne({ _id: req.params.id })
         .then((sauce) => {
             if (sauce.userId != req.auth.userId) {
                 res.status(403).json({ message: "Accès non autorisé" });
             } else {
+                //ici on a trouvé la sauce et elle appartient réellement à l'utilisateur authentifié
+                // donc il a le droit de la modifier; 
+                //il faut également supprimer  l'image du file system
+                //on récupère (avant le lancement de updateOne) le nom de l'image qui se trouve dans le répertoire 
+                 if (suppressOldImage) {
+                    const filename = sauce.imageUrl.split("/images/")[1];
+                    fs.unlink(`images/${filename}`, (err) => {
+                        if (err) throw err;
+                        console.log("Ancienne image supprimée du support physique ! Filename: " + filename);
+                    }); 
+                }
+
+                //maintenant on peut faire la modification
                 Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
-                    .then(() => res.status(200).json({ message: "Modification effectuée." }))
+                    .then(() => res.status(200).json({ message: "Modification de la sauce effectuée." }))
                     .catch(error => res.status(400).json({ error }));
             }
         })
@@ -58,6 +84,7 @@ exports.updateSauce = (req, res, next) => {
         });
 };
 // fin modification d'une sauce
+
 
 //suppression d'une sauce 
 exports.deleteSauce = (req, res, next) => {
@@ -82,11 +109,11 @@ exports.deleteSauce = (req, res, next) => {
 //fin suppression sauce
 
 
-// likeStatus (l'état de l'indicateur "like": 0 ou 1 ou -1)
+// likeStatus (l'état de l'indicateur "like": 0 ou 1 ou -1) et remplissage des tableaux
 exports.likeStatus = (req, res, next) => {
 
     if (req.body.like === 1) {
-        Sauce.updateOne({ _id: req.params.id }, { $inc: {likes: 1 }, $push: { usersLiked: req.body.userId } })
+        Sauce.updateOne({ _id: req.params.id }, { $inc: { likes: 1 }, $push: { usersLiked: req.body.userId } })
             .then(() => res.status(200).json({ message: "You like !" }))
             .catch(error => res.status(400).json({ error }))
     } else if (req.body.like === -1) {
@@ -98,17 +125,18 @@ exports.likeStatus = (req, res, next) => {
             .then(sauce => {
                 if (sauce.usersLiked.includes(req.body.userId)) {
                     Sauce.updateOne({ _id: req.params.id }, { $pull: { usersLiked: req.body.userId }, $inc: { likes: -1 } })
-                        .then(() => { res.status(200).json({ message: "No like anymore" }) })
+                        .then(() => { res.status(200).json({ message: "Your like is removed" }) })
                         .catch(error => res.status(400).json({ error }))
                 } else if (sauce.usersDisliked.includes(req.body.userId)) {
                     Sauce.updateOne({ _id: req.params.id }, { $pull: { usersDisliked: req.body.userId }, $inc: { dislikes: -1 } })
-                        .then(() => { res.status(200).json({ message: "No dislike anymore" }) })
+                        .then(() => { res.status(200).json({ message: "Your dislike is removed" }) })
                         .catch(error => res.status(400).json({ error }))
                 }
             })
             .catch(error => res.status(400).json({ error }))
     }
-    
-}; 
-//fin likeStatus 
+
+};
+//fin likeStatus
+
 

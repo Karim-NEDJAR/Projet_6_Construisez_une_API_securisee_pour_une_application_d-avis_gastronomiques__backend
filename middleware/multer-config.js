@@ -14,19 +14,19 @@ const MIME_TYPES = {
 };
 
 const space = " ";
-const underscore = "_";
+const tiret = "-";
 const dot = ".";
-const timestamp = Date.now();
-
+const underscore = "_";
 const storage = multer.diskStorage({
     destination: (req, file, callback) => { 
         callback(null, "images"); 
     },
     filename: (req, file, callback) => {
         let name = file.originalname.split(dot)[0] ;
-         name = name.split(space).join(underscore);
+         name = name.split(space).join(tiret);
         const extension = MIME_TYPES[file.mimetype];
-        callback(null, name +  timestamp + dot + extension);
+        const timestamp = Date.now();
+        callback(null, name + underscore + timestamp + dot + extension);
     }
 });
 
