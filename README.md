@@ -2,6 +2,8 @@
 création d'un backend pour un frontend existant
 Projet 6: piiquante
 
+LES DEPENDANCES:
+
 NodeJS version  18.13.0
 express version 4.18.2
 (à partir de la version 4.16 d'Express, 
