@@ -68,7 +68,7 @@ exports.updateSauce = (req, res, next) => {
   //2 cas sont à considérer: un cas avec une nouvelle image
   //et un cas sans nouvelle image
   //si une image accompagne la requête, on lui affecte son url
-  //et on supprime éventuellement l'ancienne image
+  //et on supprime l'ancienne image
   //si pas d'image on récupère seulement le body de la requête
   let suppressOldImage = false;
   let sauceObject = req.file;
@@ -84,7 +84,6 @@ exports.updateSauce = (req, res, next) => {
     sauceObject = { ...req.body };
   }
 
-  // delete sauceObject._userId; // suppression (préconisée dans le cours) qui semble ici inutile
   Sauce.findOne({ _id: req.params.id })
     .then((sauce) => {
       if (sauce.userId != req.auth.userId) {
