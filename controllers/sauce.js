@@ -96,11 +96,14 @@ exports.updateSauce = (req, res, next) => {
         if (suppressOldImage) {
           const filename = sauce.imageUrl.split("/images/")[1];
           fs.unlink(`images/${filename}`, (err) => {
-            if (err) throw err;
-            console.log(
-              "Ancienne image supprimée du support physique ! Filename: " +
-                filename
-            );
+            if (!err) {
+              console.log(
+                "Ancienne image supprimée du support physique ! Filename: " +
+                  filename
+              );
+            } else {
+              throw err;
+            }
           });
         }
         //maintenant on peut faire la modification
@@ -169,7 +172,7 @@ exports.likeStatus = (req, res, next) => {
         //on vérifie que l'userid ne se trouve pas déjà dans le tableau des likes et alors on l'ajoute,  sinon on ne fait rien
         //et dans tous les cas on vérifie également qu'il ne se trouve pas également dans le tableau des dislikes
         // et auquel cas on l'en retire car on NE peut avoir pour la même sauce et le même userid à la fois un like et un dislike
-        //ceci pour prévenir les requêtes faites au moyen d'une UI autre que l'application piiquante
+        //ceci pour prévenir les requêtes faites au moyen d'une UI autre que l'application "Hot takes"
         if (userIsNowhere) {
           Sauce.updateOne(
             { _id: req.params.id },

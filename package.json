@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "création d'un backend pour un frontend existant Projet 6: piiquante",
+  "description": "Construisez une API sécurisée pour une application d'avis gastronomiques",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
