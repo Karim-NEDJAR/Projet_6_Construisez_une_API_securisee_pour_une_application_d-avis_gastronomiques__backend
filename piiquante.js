@@ -10,10 +10,10 @@ dotenv.config({ path: process.cwd() + "/.env" });
 
 // connection à la bdd mongoDB via le package mongoose
 mongoose
-  .connect(
-    `mongodb+srv://${process.env.DB_USER_NAME}:${process.env.DB_USER_PASSWORD}@${process.env.DB_URL}?retryWrites=true&w=majority`,
-    { useNewUrlParser: true, useUnifiedTopology: true }
-  )
+  .connect(process.env.DB_CONNECT_STRING, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("Connexion à MongoDB: OK "))
   .catch(() => console.log("Connexion à MongoDB : K O "));
 
